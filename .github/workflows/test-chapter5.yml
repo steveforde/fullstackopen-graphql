@@ -8,7 +8,7 @@ on:
 jobs:
   e2e-tests:
     runs-on: ubuntu-latest
-    timeout-minutes: 30
+    timeout-minutes: 10
 
     steps:
       - name: Check out repository
@@ -37,6 +37,12 @@ jobs:
           PLAYWRIGHT_BROWSERS_PATH: 0
         run: npx playwright install chromium
 
-      - name: Run Playwright tests
+      # Your debug step to print out the package.json test setup
+      - name: Debug - show test script
         working-directory: tests-chapter5
-        run: npm test
+        run: cat package.json | grep -A2 '"test"'
+
+      # Your verbose test step to see live, running updates
+      - name: Run Playwright tests (verbose)
+        working-directory: tests-chapter5
+        run: npx playwright test --reporter=list
