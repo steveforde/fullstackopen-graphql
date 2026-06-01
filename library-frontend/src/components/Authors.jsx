@@ -22,7 +22,6 @@ const Authors = (props) => {
 
   const authors = result.data.allAuthors;
 
-  // 🌟 Ensure the state matches the first author visible in the dropdown on initial render
   if (authors.length > 0 && !name) {
     setName(authors[0].name);
   }
@@ -57,29 +56,36 @@ const Authors = (props) => {
         </tbody>
       </table>
 
-      <h3>Set birthyear</h3>
-      <form onSubmit={submit}>
-        <div>
-          <label>name</label>
-          {/* 🌟 Swapped text input out for the select dropdown element */}
-          <select value={name} onChange={({ target }) => setName(target.value)}>
-            {authors.map((a) => (
-              <option key={a.id} value={a.name}>
-                {a.name}
-              </option>
-            ))}
-          </select>
-        </div>
-        <div>
-          <label>born</label>
-          <input
-            type="number"
-            value={born}
-            onChange={({ target }) => setBorn(target.value)}
-          />
-        </div>
-        <button type="submit">update author</button>
-      </form>
+      {/* 🔒 Only render the Set birthyear heading and form if the user is logged in */}
+      {props.token && (
+        <>
+          <h3>Set birthyear</h3>
+          <form onSubmit={submit}>
+            <div>
+              <label>name</label>
+              <select
+                value={name}
+                onChange={({ target }) => setName(target.value)}
+              >
+                {authors.map((a) => (
+                  <option key={a.id} value={a.name}>
+                    {a.name}
+                  </option>
+                ))}
+              </select>
+            </div>
+            <div>
+              <label>born</label>
+              <input
+                type="number"
+                value={born}
+                onChange={({ target }) => setBorn(target.value)}
+              />
+            </div>
+            <button type="submit">update author</button>
+          </form>
+        </>
+      )}
     </div>
   );
 };

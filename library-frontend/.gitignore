@@ -34,3 +34,19 @@ coverage/
 /playwright/.cache/
 /playwright/.auth/
 .github/
+
+# Hide local task folders from Git tracking
+Task-0/
+Task-1/
+Task-2/
+Task-3/
+Task-4/
+Task-5/
+Task-6/
+Task-7/
+Task-7-Bloglist/
+README.md
+.DS_Store
+
+# Hide frontend build cache
+graphql-section-8/library-frontend/.vite/
