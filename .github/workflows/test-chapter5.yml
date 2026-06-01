@@ -31,8 +31,15 @@ jobs:
         working-directory: tests-chapter5
         run: npm ci
 
-      - name: Install Playwright Browsers
-        uses: microsoft/playwright-github-action@v1
+      # Step A: Install only the tiny system-level dependencies for browsers
+      - name: Install Playwright OS Dependencies
+        working-directory: tests-chapter5
+        run: npx playwright install-deps chromium
+
+      # Step B: Download the actual chromium browser binary smoothly
+      - name: Install Playwright Chromium Browser
+        working-directory: tests-chapter5
+        run: npx playwright install chromium
 
       - name: Run Playwright tests
         working-directory: tests-chapter5
