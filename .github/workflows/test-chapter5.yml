@@ -31,9 +31,10 @@ jobs:
         working-directory: tests-chapter5
         run: npm ci
 
-      - name: Install Playwright OS Dependencies and Chromium
+      # Your exact fix: light, fast, and skips the apt package deadlock
+      - name: Install Playwright Chromium
         working-directory: tests-chapter5
-        run: npx playwright install --with-deps chromium
+        run: npx playwright install chromium
 
       - name: Run Playwright tests
         working-directory: tests-chapter5
