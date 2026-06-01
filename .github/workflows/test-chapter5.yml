@@ -7,11 +7,8 @@ on:
 
 jobs:
   e2e-tests:
-    # This tells GitHub to run everything inside a container that already has Chrome installed
     runs-on: ubuntu-latest
-    container:
-      image: mcr.microsoft.com/playwright:v1.44.0-jammy
-    timeout-minutes: 10
+    timeout-minutes: 30
 
     steps:
       - name: Check out repository
@@ -34,8 +31,10 @@ jobs:
         working-directory: tests-chapter5
         run: npm ci
 
-      # NO DOWNLOAD STEPS NEEDED HERE! The browser is already inside the container.
+      - name: Install Playwright OS Dependencies and Chromium
+        working-directory: tests-chapter5
+        run: npx playwright install --with-deps chromium
 
       - name: Run Playwright tests
         working-directory: tests-chapter5
-        run: npx playwright test
+        run: npm test
