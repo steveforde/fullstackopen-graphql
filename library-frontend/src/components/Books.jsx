@@ -4,32 +4,39 @@ import { ALL_BOOKS } from "../queries";
 
 const Books = (props) => {
   const [genreFilter, setGenreFilter] = useState("all genres");
-  const result = useQuery(ALL_BOOKS);
+
+  // 1. This query ALWAYS fetches all books from the server to keep our buttons intact
+  const allBooksResult = useQuery(ALL_BOOKS, {
+    fetchPolicy: "cache-and-network",
+  });
+
+  // 2. This query dynamically updates to fetch only the filtered books for the table
+  const filteredBooksResult = useQuery(ALL_BOOKS, {
+    variables: { genre: genreFilter === "all genres" ? null : genreFilter },
+    fetchPolicy: "cache-and-network",
+  });
 
   if (!props.show) {
     return null;
   }
 
-  if (result.loading) {
+  // Wait for both queries to load successfully
+  if (allBooksResult.loading || filteredBooksResult.loading) {
     return <div>loading books...</div>;
   }
 
-  const books = result.data.allBooks;
-
-  // 1. Extract all unique genres across all books dynamically
+  // 3. Extract unique genres from the FULL book list so the buttons never disappear
+  const booksForButtons = allBooksResult.data.allBooks;
   const allGenresSet = new Set();
-  books.forEach((b) => {
+  booksForButtons.forEach((b) => {
     if (b.genres) {
       b.genres.forEach((g) => allGenresSet.add(g));
     }
   });
   const uniqueGenres = Array.from(allGenresSet);
 
-  // 2. Filter the book list based on the selected genre state
-  const booksToShow =
-    genreFilter === "all genres"
-      ? books
-      : books.filter((b) => b.genres.includes(genreFilter));
+  // 4. Set the books to display exactly what the filtered backend query returned
+  const booksToShow = filteredBooksResult.data.allBooks;
 
   return (
     <div>
@@ -58,7 +65,7 @@ const Books = (props) => {
         </tbody>
       </table>
 
-      {/* 3. Render the genre buttons at the bottom */}
+      {/* 5. Render the stable genre buttons at the bottom */}
       <div style={{ display: "flex", gap: "5px", flexWrap: "wrap" }}>
         {uniqueGenres.map((genre) => (
           <button

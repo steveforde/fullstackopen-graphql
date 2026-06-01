@@ -14,8 +14,8 @@ export const ALL_AUTHORS = gql`
 // 🌟 FIXED: Exercise 18 (Listing Books)
 // Changed 'author' from a plain string to an object requesting the author's name
 export const ALL_BOOKS = gql`
-  query {
-    allBooks {
+  query allBooks($genre: String) {
+    allBooks(genre: $genre) {
       title
       author {
         name

@@ -5,7 +5,15 @@ const Recommendations = (props) => {
   const userResult = useQuery(ME, {
     fetchPolicy: "no-cache", // Forces Apollo to get a fresh user state every time
   });
-  const booksResult = useQuery(ALL_BOOKS);
+
+  const favoriteGenre = userResult.data?.me?.favoriteGenre;
+
+  // 🔑 UPDATE: Use the genre variable and cache policy to ensure it's always up-to-date
+  const booksResult = useQuery(ALL_BOOKS, {
+    variables: { genre: favoriteGenre },
+    skip: !favoriteGenre, // Don't run the query until we successfully have the favorite genre
+    fetchPolicy: "cache-and-network",
+  });
 
   if (!props.show) {
     return null;
@@ -16,22 +24,14 @@ const Recommendations = (props) => {
   }
 
   const user = userResult.data?.me;
-  const books = booksResult.data?.allBooks || [];
 
   // If no user object is found, return nothing to keep it clean
   if (!user) {
     return null;
   }
 
-  const favoriteGenre = user.favoriteGenre;
-
-  // 🔑 UPDATED FILTER: Robust case-insensitive comparison for the genres array
-  const recommendedBooks = books.filter((b) => {
-    if (!b.genres) return false;
-    return b.genres.some(
-      (g) => g.toLowerCase().trim() === favoriteGenre.toLowerCase().trim(),
-    );
-  });
+  // 🔑 UPDATE: The server already did the filtering, so we can use the data directly
+  const recommendedBooks = booksResult.data?.allBooks || [];
 
   return (
     <div>
@@ -50,7 +50,6 @@ const Recommendations = (props) => {
           {recommendedBooks.map((b) => (
             <tr key={b.id || b.title}>
               <td style={{ paddingRight: "15px" }}>{b.title}</td>
-              {/* 🔑 SAFELY READ NESTED AUTHOR */}
               <td style={{ paddingRight: "15px" }}>
                 {b.author?.name || "Unknown"}
               </td>
