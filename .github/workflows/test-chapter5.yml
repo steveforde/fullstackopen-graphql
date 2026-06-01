@@ -31,9 +31,9 @@ jobs:
         working-directory: tests-chapter5
         run: npm ci
 
-      - name: Install Playwright browsers
-        working-directory: tests-chapter5
-        run: npx playwright install chromium --with-deps
+      # Optimized: Using Microsoft's official, highly stable Playwright action
+      - name: Install Playwright Browsers
+        uses: microsoft/playwright-actions@v1
 
       - name: Run Playwright tests
         working-directory: tests-chapter5
