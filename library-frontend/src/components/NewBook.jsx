@@ -1,5 +1,5 @@
 import { useState } from "react";
-// 🌟 1. Import the mutation hook and the query strings
+// 🌟 Import the mutation hook and the query strings
 import { useMutation } from "@apollo/client/react";
 import { CREATE_BOOK, ALL_BOOKS, ALL_AUTHORS } from "../queries";
 
@@ -10,9 +10,13 @@ const NewBook = (props) => {
   const [genre, setGenre] = useState("");
   const [genres, setGenres] = useState([]);
 
-  // 🌟 2. Initialize the mutation hook with automatic cache updates
+  // 🌟 Explicitly refetch both the base query and the explicit { genre: null } query variation
   const [addBook] = useMutation(CREATE_BOOK, {
-    refetchQueries: [{ query: ALL_BOOKS }, { query: ALL_AUTHORS }],
+    refetchQueries: [
+      { query: ALL_BOOKS }, // Refetches base query used for updating stable genre buttons
+      { query: ALL_BOOKS, variables: { genre: null } }, // Refetches the "all genres" table query layout
+      { query: ALL_AUTHORS }, // Refetches authors list
+    ],
   });
 
   if (!props.show) {
@@ -22,7 +26,7 @@ const NewBook = (props) => {
   const submit = async (event) => {
     event.preventDefault();
 
-    // 🌟 3. Execute the mutation, safely parsing the published year string to an Int
+    // 🌟 Execute the mutation, safely parsing the published year string to an Int
     addBook({
       variables: {
         title,
@@ -48,39 +52,55 @@ const NewBook = (props) => {
     <div>
       <form onSubmit={submit}>
         <div>
-          {/* 🌟 Wrapped text in proper <label> tags for testing requirements */}
-          <label>title</label>
-          <input
-            value={title}
-            onChange={({ target }) => setTitle(target.value)}
-          />
+          {/* 🌟 Input nested inside label so Playwright can find it by its text label */}
+          <label>
+            title
+            <input
+              value={title}
+              onChange={({ target }) => setTitle(target.value)}
+            />
+          </label>
         </div>
         <div>
-          <label>author</label>
-          <input
-            value={author}
-            onChange={({ target }) => setAuthor(target.value)}
-          />
+          {/* 🌟 Input nested inside label */}
+          <label>
+            author
+            <input
+              value={author}
+              onChange={({ target }) => setAuthor(target.value)}
+            />
+          </label>
         </div>
         <div>
-          <label>published</label>
-          <input
-            type="number"
-            value={published}
-            onChange={({ target }) => setPublished(target.value)}
-          />
+          {/* 🌟 Input nested inside label */}
+          <label>
+            published
+            <input
+              type="number"
+              value={published}
+              onChange={({ target }) => setPublished(target.value)}
+            />
+          </label>
         </div>
         <div>
-          <label>genre</label>
-          <input
-            value={genre}
-            onChange={({ target }) => setGenre(target.value)}
-          />
-          <button onClick={addGenre} type="button">
+          <label>
+            genre
+            <input
+              value={genre}
+              onChange={({ target }) => setGenre(target.value)}
+            />
+          </label>
+          <button
+            onClick={addGenre}
+            type="button"
+            style={{ marginLeft: "10px" }}
+          >
             add genre
           </button>
         </div>
-        <div>genres: {genres.join(" ")}</div>
+        <div style={{ marginTop: "10px", marginBottom: "10px" }}>
+          genres: {genres.join(" ")}
+        </div>
         <button type="submit">create book</button>
       </form>
     </div>

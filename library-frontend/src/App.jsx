@@ -4,14 +4,24 @@ import Authors from "./components/Authors";
 import Books from "./components/Books";
 import NewBook from "./components/NewBook";
 import LoginForm from "./components/LoginForm";
-import Recommendations from "./components/Recommendations"; // 👈 Kept this perfect import
+import Recommendations from "./components/Recommendations";
 
 const App = () => {
   const [page, setPage] = useState("authors");
   const [token, setToken] = useState(() =>
     localStorage.getItem("library-user-token"),
   );
+  // 🌟 State to hold the login failure message for Playwright
+  const [errorMessage, setErrorMessage] = useState(null);
   const client = useApolloClient();
+
+  // 🌟 Helper function to temporarily show and then auto-clear the message
+  const notify = (message) => {
+    setErrorMessage(message);
+    setTimeout(() => {
+      setErrorMessage(null);
+    }, 5000);
+  };
 
   const logout = () => {
     setToken(null);
@@ -46,7 +56,6 @@ const App = () => {
             >
               add book
             </button>
-            {/* 🔑 Moved the recommend button inside the logged-in check */}
             <button
               style={{ marginRight: "10px", padding: "5px 10px" }}
               onClick={() => setPage("recommend")}
@@ -66,6 +75,14 @@ const App = () => {
           </button>
         )}
       </div>
+
+      {/* 🌟 Visual Notification Banner for Playwright to look for */}
+      {errorMessage && (
+        <div style={{ color: "red", marginBottom: "20px", fontWeight: "bold" }}>
+          {errorMessage}
+        </div>
+      )}
+
       {/* Views */}
       <Authors show={page === "authors"} token={token} />
       <Books show={page === "books"} />
@@ -76,6 +93,7 @@ const App = () => {
           show={page === "login"}
           setToken={setToken}
           setPage={setPage}
+          notify={notify} // 👈 🌟 Passing notify function as a prop here
         />
       )}
 

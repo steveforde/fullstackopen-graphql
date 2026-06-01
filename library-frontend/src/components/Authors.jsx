@@ -56,14 +56,15 @@ const Authors = (props) => {
         </tbody>
       </table>
 
-      {/* 🔒 Only render the Set birthyear heading and form if the user is logged in */}
+      {/* Only render the Set birthyear heading and form if the user is logged in */}
       {props.token && (
         <>
           <h3>Set birthyear</h3>
           <form onSubmit={submit}>
             <div>
-              <label>name</label>
+              {/* 🌟 Added name="name" attribute for the Playwright locator */}
               <select
+                name="name"
                 value={name}
                 onChange={({ target }) => setName(target.value)}
               >
@@ -75,12 +76,15 @@ const Authors = (props) => {
               </select>
             </div>
             <div>
-              <label>born</label>
-              <input
-                type="number"
-                value={born}
-                onChange={({ target }) => setBorn(target.value)}
-              />
+              {/* 🌟 Wrapped the input cleanly inside the label for testing accessibility */}
+              <label>
+                born
+                <input
+                  type="number"
+                  value={born}
+                  onChange={({ target }) => setBorn(target.value)}
+                />
+              </label>
             </div>
             <button type="submit">update author</button>
           </form>

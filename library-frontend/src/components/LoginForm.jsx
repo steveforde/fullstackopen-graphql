@@ -2,12 +2,15 @@ import { useState, useEffect } from "react";
 import { useMutation } from "@apollo/client/react";
 import { LOGIN } from "../queries";
 
-const LoginForm = ({ show, setToken, setPage }) => {
+// 🌟 Added notify to destructuring
+const LoginForm = ({ show, setToken, setPage, notify }) => {
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
 
   const [login, result] = useMutation(LOGIN, {
     onError: (error) => {
+      // 🌟 Trigger the exact text string Playwright expects to see on failure
+      notify("login failed");
       console.error(error.graphQLErrors[0]?.message || error.message);
     },
   });
@@ -36,19 +39,23 @@ const LoginForm = ({ show, setToken, setPage }) => {
     <div style={{ marginTop: "20px" }}>
       <form onSubmit={submit}>
         <div style={{ marginBottom: "10px" }}>
-          name{" "}
-          <input
-            value={username}
-            onChange={({ target }) => setUsername(target.value)}
-          />
+          <label>
+            username
+            <input
+              value={username}
+              onChange={({ target }) => setUsername(target.value)}
+            />
+          </label>
         </div>
         <div style={{ marginBottom: "10px" }}>
-          password{" "}
-          <input
-            type="password"
-            value={password}
-            onChange={({ target }) => setPassword(target.value)}
-          />
+          <label>
+            password
+            <input
+              type="password"
+              value={password}
+              onChange={({ target }) => setPassword(target.value)}
+            />
+          </label>
         </div>
         <button type="submit" style={{ padding: "5px 10px" }}>
           login
