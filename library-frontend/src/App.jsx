@@ -1,4 +1,5 @@
 import { useState } from "react";
+// 🌟 Kept useApolloClient here so both the Subscription AND Logout can use it
 import { useApolloClient, useSubscription } from "@apollo/client/react";
 import { gql } from "@apollo/client";
 
@@ -10,7 +11,6 @@ import Recommendations from "./components/Recommendations";
 
 import { ALL_BOOKS } from "./queries";
 
-// 1. Subscription query matching core entity parameters
 export const BOOK_ADDED = gql`
   subscription {
     bookAdded {
@@ -32,6 +32,8 @@ const App = () => {
     localStorage.getItem("library-user-token"),
   );
   const [errorMessage, setErrorMessage] = useState(null);
+
+  // 🌟 Clean, centralized client instance used globally across the component
   const client = useApolloClient();
 
   const notify = (message) => {
@@ -41,19 +43,34 @@ const App = () => {
     }, 5000);
   };
 
-  // 2. Clear, corrected subscription refetch engine
   useSubscription(BOOK_ADDED, {
-    onData: ({ client, data }) => {
+    onData: ({ data }) => {
       const addedBook = data.data.bookAdded;
       notify(
         `New book added: "${addedBook.title}" by ${addedBook.author.name}`,
       );
 
-      client.refetchQueries({
-        include: [
-          { query: ALL_BOOKS },
-          { query: ALL_BOOKS, variables: { genre: null } },
-        ],
+      // Write to both cache configurations that Books.jsx switches between
+      const queries = [
+        { query: ALL_BOOKS },
+        { query: ALL_BOOKS, variables: { genre: null } },
+      ];
+
+      queries.forEach(({ query, variables }) => {
+        try {
+          const existing = client.readQuery({ query, variables });
+          if (existing) {
+            client.writeQuery({
+              query,
+              variables,
+              data: {
+                allBooks: existing.allBooks.concat(addedBook),
+              },
+            });
+          }
+        } catch (e) {
+          // Silent catch for cache misses
+        }
       });
     },
   });
@@ -61,13 +78,12 @@ const App = () => {
   const logout = () => {
     setToken(null);
     localStorage.removeItem("library-user-token");
-    client.resetStore();
+    client.resetStore(); // 🌟 Safely uses the top-level client instance here
     setPage("authors");
   };
 
   return (
     <div style={{ padding: "40px", fontFamily: "sans-serif" }}>
-      {/* Navigation Menu */}
       <div style={{ marginBottom: "30px" }}>
         <button
           style={{ marginRight: "10px", padding: "5px 10px" }}
@@ -110,7 +126,6 @@ const App = () => {
         )}
       </div>
 
-      {/* Fixed styling syntax error bracket here */}
       {errorMessage && (
         <div style={{ color: "red", marginBottom: "20px", fontWeight: "bold" }}>
           {errorMessage}
