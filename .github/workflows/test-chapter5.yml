@@ -19,6 +19,27 @@ jobs:
         with:
           node-version: 24
 
+      - name: Install E2E test dependencies
+        working-directory: tests-chapter5
+        run: npm ci
+
+      - name: Cache Playwright browsers
+        uses: actions/cache@v4
+        id: playwright-cache
+        with:
+          path: ~/.cache/ms-playwright
+          key: playwright-${{ hashFiles('tests-chapter5/package-lock.json') }}
+
+      - name: Install Playwright browsers
+        if: steps.playwright-cache.outputs.cache-hit != 'true'
+        working-directory: tests-chapter5
+        run: npx playwright install --with-deps chromium
+
+      - name: Install Playwright deps only (cache hit)
+        if: steps.playwright-cache.outputs.cache-hit == 'true'
+        working-directory: tests-chapter5
+        run: npx playwright install-deps chromium
+
       - name: Install library-backend dependencies
         working-directory: library-backend
         run: npm ci
@@ -26,15 +47,6 @@ jobs:
       - name: Install library-frontend dependencies
         working-directory: library-frontend
         run: npm ci
-
-      - name: Install E2E test dependencies
-        working-directory: tests-chapter5
-        run: npm ci
-
-      # Single clean installation step utilizing default global caching paths
-      - name: Install Playwright browsers
-        working-directory: tests-chapter5
-        run: npx playwright install --with-deps
 
       - name: Run Playwright tests
         working-directory: tests-chapter5
