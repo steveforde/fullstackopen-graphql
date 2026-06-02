@@ -8,19 +8,13 @@ on:
 jobs:
   e2e-tests:
     runs-on: ubuntu-latest
-    # This pulls down the pre-configured Microsoft environment where everything is pre-installed
     container:
-      image: mcr.microsoft.com/playwright:v1.49.0-noble
+      image: mcr.microsoft.com/playwright:v1.52.0-noble
     timeout-minutes: 10
 
     steps:
       - name: Check out repository
         uses: actions/checkout@v4
-
-      - name: Setup Node.js
-        uses: actions/setup-node@v4
-        with:
-          node-version: 24
 
       - name: Install library-backend dependencies
         working-directory: library-backend
@@ -34,11 +28,17 @@ jobs:
         working-directory: tests-chapter5
         run: npm ci
 
-      # Notice how the download/install browser step is completely GONE.
-      # We jump straight into the test runner execution safely.
+      - name: Cache MongoDB binary
+        uses: actions/cache@v4
+        with:
+          path: /tmp/mongodb-binaries
+          key: mongodb-binary-7.0.14
+
       - name: Run Playwright tests
         working-directory: tests-chapter5
         env:
           CI: true
           HOME: /root
+          MONGOMS_VERSION: 7.0.14
+          MONGOMS_DOWNLOAD_DIR: /tmp/mongodb-binaries
         run: npx playwright test --reporter=list
