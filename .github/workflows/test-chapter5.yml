@@ -31,11 +31,16 @@ jobs:
         working-directory: tests-chapter5
         run: npm ci
 
+      # Pre-install system dependencies safely at the root runner level
+      - name: Install system dependencies for Playwright
+        run: npx playwright install-deps chromium
+
+      # Install the actual browser with the non-interactive flag tied to your path
       - name: Install Playwright Chromium
         working-directory: tests-chapter5
         env:
           PLAYWRIGHT_BROWSERS_PATH: 0
-        run: npx playwright install chromium
+        run: npx playwright install --with-deps chromium
 
       - name: Run Playwright tests
         working-directory: tests-chapter5
