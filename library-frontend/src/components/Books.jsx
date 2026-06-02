@@ -5,27 +5,23 @@ import { ALL_BOOKS } from "../queries";
 const Books = (props) => {
   const [genreFilter, setGenreFilter] = useState("all genres");
 
-  // 1. This query ALWAYS fetches all books from the server to keep our buttons intact
   const allBooksResult = useQuery(ALL_BOOKS, {
-    fetchPolicy: "cache-and-network",
+    fetchPolicy: "network-only",
   });
 
-  // 2. This query dynamically updates to fetch only the filtered books for the table
   const filteredBooksResult = useQuery(ALL_BOOKS, {
     variables: { genre: genreFilter === "all genres" ? null : genreFilter },
-    fetchPolicy: "cache-and-network",
+    fetchPolicy: "network-only",
   });
 
   if (!props.show) {
     return null;
   }
 
-  // Wait for both queries to load successfully
   if (allBooksResult.loading || filteredBooksResult.loading) {
     return <div>loading books...</div>;
   }
 
-  // 3. Extract unique genres from the FULL book list so the buttons never disappear
   const booksForButtons = allBooksResult.data.allBooks;
   const allGenresSet = new Set();
   booksForButtons.forEach((b) => {
@@ -35,7 +31,6 @@ const Books = (props) => {
   });
   const uniqueGenres = Array.from(allGenresSet);
 
-  // 4. Set the books to display exactly what the filtered backend query returned
   const booksToShow = filteredBooksResult.data.allBooks;
 
   return (
@@ -65,7 +60,6 @@ const Books = (props) => {
         </tbody>
       </table>
 
-      {/* 5. Render the stable genre buttons at the bottom */}
       <div style={{ display: "flex", gap: "5px", flexWrap: "wrap" }}>
         {uniqueGenres.map((genre) => (
           <button
