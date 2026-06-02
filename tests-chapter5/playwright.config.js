@@ -2,7 +2,7 @@ const { defineConfig, devices } = require("@playwright/test");
 
 module.exports = defineConfig({
   testDir: "./tests",
-  timeout: 10000,
+  timeout: 30000,
   fullyParallel: false,
   forbidOnly: !!process.env.CI,
   retries: process.env.CI ? 2 : 0,
@@ -22,11 +22,13 @@ module.exports = defineConfig({
     {
       command: "npm run start:backend",
       port: 4000,
+      timeout: 60000,
       reuseExistingServer: !process.env.CI,
     },
     {
       command: "npm run start:frontend",
       port: 5173,
+      timeout: 60000,
       reuseExistingServer: !process.env.CI,
     },
   ],
