@@ -43,16 +43,17 @@ const App = () => {
 
   // 2. Clear, corrected subscription refetch engine
   useSubscription(BOOK_ADDED, {
-    onData: ({ data }) => {
+    onData: ({ client, data }) => {
       const addedBook = data.data.bookAdded;
-
       notify(
         `New book added: "${addedBook.title}" by ${addedBook.author.name}`,
       );
 
-      // 🌟 FORCE REFETCH: Guarantees your table automatically grabs the update from the server!
       client.refetchQueries({
-        include: [ALL_BOOKS],
+        include: [
+          { query: ALL_BOOKS },
+          { query: ALL_BOOKS, variables: { genre: null } },
+        ],
       });
     },
   });
