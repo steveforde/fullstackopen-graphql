@@ -1,5 +1,4 @@
 import { useState } from "react";
-// 🌟 Kept useApolloClient here so both the Subscription AND Logout can use it
 import { useApolloClient, useSubscription } from "@apollo/client/react";
 import { gql } from "@apollo/client";
 
@@ -32,8 +31,6 @@ const App = () => {
     localStorage.getItem("library-user-token"),
   );
   const [errorMessage, setErrorMessage] = useState(null);
-
-  // 🌟 Clean, centralized client instance used globally across the component
   const client = useApolloClient();
 
   const notify = (message) => {
@@ -50,27 +47,10 @@ const App = () => {
         `New book added: "${addedBook.title}" by ${addedBook.author.name}`,
       );
 
-      // Write to both cache configurations that Books.jsx switches between
-      const queries = [
-        { query: ALL_BOOKS },
-        { query: ALL_BOOKS, variables: { genre: null } },
-      ];
-
-      queries.forEach(({ query, variables }) => {
-        try {
-          const existing = client.readQuery({ query, variables });
-          if (existing) {
-            client.writeQuery({
-              query,
-              variables,
-              data: {
-                allBooks: existing.allBooks.concat(addedBook),
-              },
-            });
-          }
-        } catch (e) {
-          // Silent catch for cache misses
-        }
+      // 🌟 FORCE REFETCH: Forces Apollo to pull fresh data for ALL active instances of ALL_BOOKS
+      // This completely bypasses any hidden genre variable mismatch issues!
+      client.refetchQueries({
+        include: ["ALL_BOOKS"],
       });
     },
   });
@@ -78,7 +58,7 @@ const App = () => {
   const logout = () => {
     setToken(null);
     localStorage.removeItem("library-user-token");
-    client.resetStore(); // 🌟 Safely uses the top-level client instance here
+    client.resetStore();
     setPage("authors");
   };
 
