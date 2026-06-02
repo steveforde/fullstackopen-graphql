@@ -2,7 +2,7 @@ name: Test library-backend
 
 on:
   push:
-  branches: [main, master]
+    branches: [main, master]
   workflow_dispatch:
 
 jobs:
@@ -10,12 +10,12 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@v4
 
       - name: Setup Node.js
-        uses: actions/setup-node@v6
+        uses: actions/setup-node@v4
         with:
-          node-version: 24
+          node-version: 20
 
       - name: Install library-backend dependencies
         working-directory: library-backend
