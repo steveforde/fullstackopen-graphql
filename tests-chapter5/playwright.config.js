@@ -21,12 +21,12 @@ module.exports = defineConfig({
   webServer: [
     {
       command: "npm run start:backend",
-      port: 3001,
+      port: 4000,
       reuseExistingServer: !process.env.CI,
     },
     {
       command: "npm run start:frontend",
-      port: 3000,
+      port: 5173,
       reuseExistingServer: !process.env.CI,
     },
   ],
