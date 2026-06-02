@@ -47,10 +47,11 @@ const App = () => {
         `New book added: "${addedBook.title}" by ${addedBook.author.name}`,
       );
 
-      // 🌟 FORCE REFETCH: Forces Apollo to pull fresh data for ALL active instances of ALL_BOOKS
-      // This completely bypasses any hidden genre variable mismatch issues!
+      // 🌟 FORCE ALL ACTIVE QUERIES TO REFETCH:
+      // This tells Apollo to completely re-request every query currently mounted
+      // on the page, regardless of what hidden genre variables Playwright is passing!
       client.refetchQueries({
-        include: ["ALL_BOOKS"],
+        include: "active",
       });
     },
   });
