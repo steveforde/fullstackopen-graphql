@@ -1,81 +1,76 @@
-import { useState } from "react";
-import { useQuery } from "@apollo/client/react";
+import { useQuery } from "@apollo/client";
+import { useState, useEffect } from "react";
 import { ALL_BOOKS } from "../queries";
 
 const Books = (props) => {
-  const [genreFilter, setGenreFilter] = useState("all genres");
+  const [genre, setGenre] = useState(null);
 
-  const allBooksResult = useQuery(ALL_BOOKS, {
-    fetchPolicy: "network-only",
-  });
-
+  // Fetch both datasets using a network policy that updates smoothly
+  const allBooksResult = useQuery(ALL_BOOKS);
   const filteredBooksResult = useQuery(ALL_BOOKS, {
-    variables: { genre: genreFilter === "all genres" ? null : genreFilter },
-    fetchPolicy: "network-only",
+    variables: { genre },
+    skip: !genre,
   });
 
   if (!props.show) {
     return null;
   }
 
-  if (allBooksResult.loading || filteredBooksResult.loading) {
+  // 🌟 FIX: Check for missing data instead of blocking on the loading flags!
+  // This allows stale/cached rows to remain visible during background network updates.
+  if (!allBooksResult.data || (genre && !filteredBooksResult.data)) {
     return <div>loading books...</div>;
   }
 
-  const booksForButtons = allBooksResult.data.allBooks;
-  const allGenresSet = new Set();
-  booksForButtons.forEach((b) => {
-    if (b.genres) {
-      b.genres.forEach((g) => allGenresSet.add(g));
-    }
-  });
-  const uniqueGenres = Array.from(allGenresSet);
+  // Determine which data pool to loop through
+  const books = genre
+    ? filteredBooksResult.data.allBooks
+    : allBooksResult.data.allBooks;
 
-  const booksToShow = filteredBooksResult.data.allBooks;
+  // Extract all unique genres across all books for the filter buttons
+  const allUniqueGenres = allBooksResult.data.allBooks
+    ? [...new Set(allBooksResult.data.allBooks.flatMap((b) => b.genres))]
+    : [];
 
   return (
     <div>
       <h2>books</h2>
 
-      {genreFilter !== "all genres" && (
-        <p style={{ margin: "10px 0" }}>
-          in genre <strong>{genreFilter}</strong>
+      {genre && (
+        <p>
+          in genre <strong>{genre}</strong>
         </p>
       )}
 
-      <table style={{ marginBottom: "20px" }}>
+      <table>
         <tbody>
           <tr>
-            <th>title</th>
+            <th></th>
             <th>author</th>
             <th>published</th>
           </tr>
-          {booksToShow.map((b) => (
-            <tr key={b.id}>
-              <td>{b.title}</td>
-              <td>{b.author.name}</td>
-              <td>{b.published}</td>
+          {books.map((a) => (
+            <tr key={a.title}>
+              <td>{a.title}</td>
+              <td>{a.author.name}</td>
+              <td>{a.published}</td>
             </tr>
           ))}
         </tbody>
       </table>
 
-      <div style={{ display: "flex", gap: "5px", flexWrap: "wrap" }}>
-        {uniqueGenres.map((genre) => (
+      {/* Genre Filter Control Buttons */}
+      <div style={{ marginTop: "20px" }}>
+        {allUniqueGenres.map((g) => (
           <button
-            key={genre}
-            onClick={() => setGenreFilter(genre)}
-            style={{ fontWeight: genreFilter === genre ? "bold" : "normal" }}
+            key={g}
+            style={{ marginRight: "5px", padding: "5px 10px" }}
+            onClick={() => setGenre(g)}
           >
-            {genre}
+            {g}
           </button>
         ))}
-        <button
-          onClick={() => setGenreFilter("all genres")}
-          style={{
-            fontWeight: genreFilter === "all genres" ? "bold" : "normal",
-          }}
-        >
+        <button style={{ padding: "5px 10px" }} onClick={() => setGenre(null)}>
           all genres
         </button>
       </div>
