@@ -44,7 +44,7 @@ jobs:
         working-directory: tests-chapter5
         env:
           CI: true
-          HOME: /root
+          # REMOVED HOME: /root TO FIX PERMISSION DENIED LOCKS
           MONGOMS_VERSION: 7.0.14
           MONGOMS_DOWNLOAD_DIR: /tmp/mongodb-binaries
         run: npx playwright test --reporter=list
