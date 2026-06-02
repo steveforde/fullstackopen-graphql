@@ -8,6 +8,9 @@ on:
 jobs:
   e2e-tests:
     runs-on: ubuntu-latest
+    # This pulls down the pre-configured Microsoft environment where everything is pre-installed
+    container:
+      image: mcr.microsoft.com/playwright:v1.49.0-noble
     timeout-minutes: 10
 
     steps:
@@ -19,27 +22,6 @@ jobs:
         with:
           node-version: 24
 
-      - name: Install E2E test dependencies
-        working-directory: tests-chapter5
-        run: npm ci
-
-      - name: Cache Playwright browsers
-        uses: actions/cache@v4
-        id: playwright-cache
-        with:
-          path: ~/.cache/ms-playwright
-          key: playwright-${{ hashFiles('tests-chapter5/package-lock.json') }}
-
-      - name: Install Playwright browsers
-        if: steps.playwright-cache.outputs.cache-hit != 'true'
-        working-directory: tests-chapter5
-        run: npx playwright install --with-deps chromium
-
-      - name: Install Playwright deps only (cache hit)
-        if: steps.playwright-cache.outputs.cache-hit == 'true'
-        working-directory: tests-chapter5
-        run: npx playwright install-deps chromium
-
       - name: Install library-backend dependencies
         working-directory: library-backend
         run: npm ci
@@ -48,8 +30,15 @@ jobs:
         working-directory: library-frontend
         run: npm ci
 
+      - name: Install E2E test dependencies
+        working-directory: tests-chapter5
+        run: npm ci
+
+      # Notice how the download/install browser step is completely GONE.
+      # We jump straight into the test runner execution safely.
       - name: Run Playwright tests
         working-directory: tests-chapter5
         env:
           CI: true
+          HOME: /root
         run: npx playwright test --reporter=list
