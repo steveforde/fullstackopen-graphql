@@ -1,5 +1,5 @@
 import { useState } from "react";
-// 🌟 Import the mutation hook and the query strings
+// Import the mutation hook and the query strings
 import { useMutation } from "@apollo/client/react";
 import { CREATE_BOOK, ALL_BOOKS, ALL_AUTHORS } from "../queries";
 
@@ -10,8 +10,12 @@ const NewBook = (props) => {
   const [genre, setGenre] = useState("");
   const [genres, setGenres] = useState([]);
 
-  // 🌟 Explicitly refetch both the base query and the explicit { genre: null } query variation
+  // Configured with an onError handler to expose hidden execution failures
   const [addBook] = useMutation(CREATE_BOOK, {
+    onError: (error) => {
+      console.error("Mutation error:", error.message);
+      alert(error.message);
+    },
     refetchQueries: [
       { query: ALL_BOOKS }, // Refetches base query used for updating stable genre buttons
       { query: ALL_BOOKS, variables: { genre: null } }, // Refetches the "all genres" table query layout
@@ -26,21 +30,27 @@ const NewBook = (props) => {
   const submit = async (event) => {
     event.preventDefault();
 
-    // 🌟 Execute the mutation, safely parsing the published year string to an Int
-    addBook({
-      variables: {
-        title,
-        author,
-        published: parseInt(published),
-        genres,
-      },
-    });
+    try {
+      // Execute the mutation, safely parsing the published year string to an Int
+      await addBook({
+        variables: {
+          title,
+          author,
+          published: parseInt(published),
+          genres,
+        },
+      });
 
-    setTitle("");
-    setPublished("");
-    setAuthor("");
-    setGenres([]);
-    setGenre("");
+      // Clear input fields ONLY if the database write succeeds completely
+      setTitle("");
+      setPublished("");
+      setAuthor("");
+      setGenres([]);
+      setGenre("");
+    } catch (error) {
+      console.error("Error adding book:", error.message);
+      alert("Failed to add book: " + error.message);
+    }
   };
 
   const addGenre = () => {
@@ -52,7 +62,6 @@ const NewBook = (props) => {
     <div>
       <form onSubmit={submit}>
         <div>
-          {/* 🌟 Input nested inside label so Playwright can find it by its text label */}
           <label>
             title
             <input
@@ -62,7 +71,6 @@ const NewBook = (props) => {
           </label>
         </div>
         <div>
-          {/* 🌟 Input nested inside label */}
           <label>
             author
             <input
@@ -72,7 +80,6 @@ const NewBook = (props) => {
           </label>
         </div>
         <div>
-          {/* 🌟 Input nested inside label */}
           <label>
             published
             <input

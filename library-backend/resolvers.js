@@ -4,6 +4,7 @@ const Author = require("./models/author");
 const User = require("./models/user");
 const { GraphQLError } = require("graphql");
 const jwt = require("jsonwebtoken");
+const pubsub = require("./pubsub"); // 👈 Updated to use the shared pubsub module
 
 const JWT_SECRET = process.env.JWT_SECRET || "MY_SECRET_KEY";
 
@@ -122,7 +123,12 @@ const resolvers = {
         });
       }
 
-      return book.populate("author");
+      const populatedBook = await book.populate("author");
+
+      // Broadcasts across the shared channel perfectly
+      pubsub.publish("BOOK_ADDED", { bookAdded: populatedBook });
+
+      return populatedBook;
     },
 
     editAuthor: async (root, args, context) => {
@@ -152,6 +158,12 @@ const resolvers = {
   Author: {
     bookCount: async (root) => {
       return Book.countDocuments({ author: root._id });
+    },
+  },
+
+  Subscription: {
+    bookAdded: {
+      subscribe: () => pubsub.asyncIterableIterator("BOOK_ADDED"),
     },
   },
 };

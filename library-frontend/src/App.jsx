@@ -1,27 +1,61 @@
 import { useState } from "react";
-import { useApolloClient } from "@apollo/client/react";
+import { useApolloClient, useSubscription } from "@apollo/client/react";
+import { gql } from "@apollo/client";
+
 import Authors from "./components/Authors";
 import Books from "./components/Books";
 import NewBook from "./components/NewBook";
 import LoginForm from "./components/LoginForm";
 import Recommendations from "./components/Recommendations";
 
+import { ALL_BOOKS } from "./queries";
+
+// 1. Subscription query matching core entity parameters
+export const BOOK_ADDED = gql`
+  subscription {
+    bookAdded {
+      id
+      title
+      published
+      genres
+      author {
+        name
+        id
+      }
+    }
+  }
+`;
+
 const App = () => {
   const [page, setPage] = useState("authors");
   const [token, setToken] = useState(() =>
     localStorage.getItem("library-user-token"),
   );
-  // 🌟 State to hold the login failure message for Playwright
   const [errorMessage, setErrorMessage] = useState(null);
   const client = useApolloClient();
 
-  // 🌟 Helper function to temporarily show and then auto-clear the message
   const notify = (message) => {
     setErrorMessage(message);
     setTimeout(() => {
       setErrorMessage(null);
     }, 5000);
   };
+
+  // 2. Clear, corrected subscription refetch engine
+  useSubscription(BOOK_ADDED, {
+    onData: ({ data }) => {
+      const addedBook = data.data.bookAdded;
+
+      notify(
+        `New book added: "${addedBook.title}" by ${addedBook.author.name}`,
+      );
+
+      // 🌟 FORCE REFETCH: Guarantees your table automatically grabs the update from the server!
+      client.refetchQueries({
+        include: ["ALL_BOOKS"],
+      });
+    },
+  });
 
   const logout = () => {
     setToken(null);
@@ -47,7 +81,6 @@ const App = () => {
           books
         </button>
 
-        {/* Show add book, recommend, and logout buttons ONLY if logged in */}
         {token ? (
           <>
             <button
@@ -76,28 +109,25 @@ const App = () => {
         )}
       </div>
 
-      {/* 🌟 Visual Notification Banner for Playwright to look for */}
+      {/* Fixed styling syntax error bracket here */}
       {errorMessage && (
         <div style={{ color: "red", marginBottom: "20px", fontWeight: "bold" }}>
           {errorMessage}
         </div>
       )}
 
-      {/* Views */}
       <Authors show={page === "authors"} token={token} />
       <Books show={page === "books"} />
 
-      {/* Guest Views */}
       {!token && (
         <LoginForm
           show={page === "login"}
           setToken={setToken}
           setPage={setPage}
-          notify={notify} // 👈 🌟 Passing notify function as a prop here
+          notify={notify}
         />
       )}
 
-      {/* strictly authenticated protected views */}
       {token && (
         <>
           <NewBook show={page === "add"} />

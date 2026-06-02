@@ -34,6 +34,10 @@ const typeDefs = /* GraphQL */ `
     me: User
   }
 
+  type Subscription {
+    bookAdded: Book!
+  }
+
   # Merged into one single Mutation block
   type Mutation {
     _resetDatabase: Boolean
