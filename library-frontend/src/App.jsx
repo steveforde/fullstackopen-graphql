@@ -47,11 +47,24 @@ const App = () => {
         `New book added: "${addedBook.title}" by ${addedBook.author.name}`,
       );
 
-      // 🌟 FORCE ALL ACTIVE QUERIES TO REFETCH:
-      // This tells Apollo to completely re-request every query currently mounted
-      // on the page, regardless of what hidden genre variables Playwright is passing!
-      client.refetchQueries({
-        include: "active",
+      const queries = [
+        { query: ALL_BOOKS },
+        { query: ALL_BOOKS, variables: { genre: null } },
+      ];
+
+      queries.forEach(({ query, variables }) => {
+        try {
+          const existing = client.readQuery({ query, variables });
+          if (existing) {
+            client.writeQuery({
+              query,
+              variables,
+              data: { allBooks: existing.allBooks.concat(addedBook) },
+            });
+          }
+        } catch (e) {
+          // cache miss, skip
+        }
       });
     },
   });
