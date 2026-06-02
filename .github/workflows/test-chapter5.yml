@@ -34,17 +34,17 @@ jobs:
           path: /tmp/mongodb-binaries
           key: mongodb-binary-7.0.14
 
-      - name: Debug paths
-        run: |
-          echo "Working dir: $(pwd)"
-          find . -name "index.js" -path "*/library-backend/*"
-          ls -la
+      - name: Download MongoDB binary
+        working-directory: tests-chapter5
+        env:
+          MONGOMS_VERSION: 7.0.14
+          MONGOMS_DOWNLOAD_DIR: /tmp/mongodb-binaries
+        run: node -e "const { MongoMemoryServer } = require('mongodb-memory-server'); MongoMemoryServer.create().then(s => { console.log('MongoDB ready'); s.stop(); })"
 
       - name: Run Playwright tests
         working-directory: tests-chapter5
         env:
           CI: true
-          # REMOVED HOME: /root TO FIX PERMISSION DENIED LOCKS
           MONGOMS_VERSION: 7.0.14
           MONGOMS_DOWNLOAD_DIR: /tmp/mongodb-binaries
         run: npx playwright test --reporter=list
