@@ -52,7 +52,7 @@ const App = () => {
 
       // 🌟 FORCE REFETCH: Guarantees your table automatically grabs the update from the server!
       client.refetchQueries({
-        include: ["ALL_BOOKS"],
+        include: [ALL_BOOKS],
       });
     },
   });
