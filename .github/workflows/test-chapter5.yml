@@ -37,12 +37,9 @@ jobs:
           PLAYWRIGHT_BROWSERS_PATH: 0
         run: npx playwright install chromium
 
-      # Your debug step to print out the package.json test setup
-      - name: Debug - show test script
+      - name: Run Playwright tests
         working-directory: tests-chapter5
-        run: cat package.json | grep -A2 '"test"'
-
-      # Your verbose test step to see live, running updates
-      - name: Run Playwright tests (verbose)
-        working-directory: tests-chapter5
+        env:
+          PLAYWRIGHT_BROWSERS_PATH: 0
+          CI: true
         run: npx playwright test --reporter=list
