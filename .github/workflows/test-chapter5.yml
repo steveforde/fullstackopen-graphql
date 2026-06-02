@@ -9,7 +9,7 @@ jobs:
   e2e-tests:
     runs-on: ubuntu-latest
     container:
-      image: mcr.microsoft.com/playwright:v1.52.0-noble
+      image: mcr.microsoft.com/playwright:v1.59.1-noble
     timeout-minutes: 10
 
     steps:
