@@ -10,6 +10,13 @@ jobs:
     runs-on: ubuntu-latest
     container:
       image: mcr.microsoft.com/playwright:v1.59.1-noble
+
+    services:
+      mongodb:
+        image: mongo:7.0.14
+        ports:
+          - 27017:27017
+
     timeout-minutes: 10
 
     steps:
@@ -28,23 +35,10 @@ jobs:
         working-directory: tests-chapter5
         run: npm ci
 
-      - name: Cache MongoDB binary
-        uses: actions/cache@v4
-        with:
-          path: /tmp/mongodb-binaries
-          key: mongodb-binary-7.0.14
-
-      - name: Download MongoDB binary
-        working-directory: tests-chapter5
-        env:
-          MONGOMS_VERSION: 7.0.14
-          MONGOMS_DOWNLOAD_DIR: /tmp/mongodb-binaries
-        run: node -e "const { MongoMemoryServer } = require('mongodb-memory-server'); MongoMemoryServer.create().then(s => { console.log('MongoDB ready'); s.stop(); })"
-
       - name: Run Playwright tests
         working-directory: tests-chapter5
         env:
           CI: true
-          MONGOMS_VERSION: 7.0.14
-          MONGOMS_DOWNLOAD_DIR: /tmp/mongodb-binaries
+          JWT_SECRET: "testsecret"
+          MONGODB_URI: "mongodb://mongodb:27017/test"
         run: npx playwright test --reporter=list
