@@ -1,15 +1,19 @@
-import { useQuery } from "@apollo/client";
-import { useState, useEffect } from "react";
+import { useQuery } from "@apollo/client/react";
+import { useState } from "react";
 import { ALL_BOOKS } from "../queries";
 
 const Books = (props) => {
   const [genre, setGenre] = useState(null);
 
   // Fetch both datasets using a network policy that updates smoothly
-  const allBooksResult = useQuery(ALL_BOOKS);
+  const allBooksResult = useQuery(ALL_BOOKS, {
+    fetchPolicy: "network-only",
+  });
+
   const filteredBooksResult = useQuery(ALL_BOOKS, {
     variables: { genre },
     skip: !genre,
+    fetchPolicy: "network-only",
   });
 
   if (!props.show) {

@@ -1,4 +1,5 @@
 const GRAPHQL_URL = "http://localhost:4000";
+const { expect } = require("@playwright/test");
 
 const TEST_USER = { username: "testuser", favoriteGenre: "refactoring" };
 const TEST_PASSWORD = "secret";
@@ -76,7 +77,6 @@ const seedDatabase = async (request) => {
     );
   }
 
-  // Set birth years for known authors
   const authorBirthYears = [
     { name: "Robert Martin", setBornTo: 1952 },
     { name: "Martin Fowler", setBornTo: 1963 },
@@ -114,9 +114,10 @@ const createBook = async (page, { title, author, published, genres }) => {
   }
 
   await page.getByRole("button", { name: "create book" }).click();
-
-  // Wait for the subscription notification to confirm the book was saved
   await page.getByText(`New book added: "${title}"`).waitFor();
+  await page
+    .getByText(`New book added: "${title}"`)
+    .waitFor({ state: "hidden" });
 };
 
 module.exports = { GRAPHQL_URL, loginWith, createBook, seedDatabase };

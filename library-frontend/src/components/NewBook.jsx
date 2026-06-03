@@ -1,7 +1,6 @@
 import { useState } from "react";
-// Import the mutation hook and the query strings
 import { useMutation } from "@apollo/client/react";
-import { CREATE_BOOK, ALL_BOOKS, ALL_AUTHORS } from "../queries";
+import { CREATE_BOOK } from "../queries";
 
 const NewBook = (props) => {
   const [title, setTitle] = useState("");
@@ -10,17 +9,10 @@ const NewBook = (props) => {
   const [genre, setGenre] = useState("");
   const [genres, setGenres] = useState([]);
 
-  // Configured with an onError handler to expose hidden execution failures
   const [addBook] = useMutation(CREATE_BOOK, {
     onError: (error) => {
-      console.error("Mutation error:", error.message);
-      alert(error.message);
+      console.error("Mutation error:", JSON.stringify(error));
     },
-    refetchQueries: [
-      { query: ALL_BOOKS }, // Refetches base query used for updating stable genre buttons
-      { query: ALL_BOOKS, variables: { genre: null } }, // Refetches the "all genres" table query layout
-      { query: ALL_AUTHORS }, // Refetches authors list
-    ],
   });
 
   if (!props.show) {
@@ -30,27 +22,20 @@ const NewBook = (props) => {
   const submit = async (event) => {
     event.preventDefault();
 
-    try {
-      // Execute the mutation, safely parsing the published year string to an Int
-      await addBook({
-        variables: {
-          title,
-          author,
-          published: parseInt(published),
-          genres,
-        },
-      });
+    await addBook({
+      variables: {
+        title,
+        author,
+        published: parseInt(published),
+        genres,
+      },
+    });
 
-      // Clear input fields ONLY if the database write succeeds completely
-      setTitle("");
-      setPublished("");
-      setAuthor("");
-      setGenres([]);
-      setGenre("");
-    } catch (error) {
-      console.error("Error adding book:", error.message);
-      alert("Failed to add book: " + error.message);
-    }
+    setTitle("");
+    setPublished("");
+    setAuthor("");
+    setGenres([]);
+    setGenre("");
   };
 
   const addGenre = () => {

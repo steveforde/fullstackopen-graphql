@@ -22,10 +22,6 @@ const Authors = (props) => {
 
   const authors = result.data.allAuthors;
 
-  if (authors.length > 0 && !name) {
-    setName(authors[0].name);
-  }
-
   const submit = async (event) => {
     event.preventDefault();
 

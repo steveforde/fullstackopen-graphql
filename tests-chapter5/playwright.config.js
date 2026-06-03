@@ -18,18 +18,19 @@ module.exports = defineConfig({
       use: { ...devices["Desktop Chrome"] },
     },
   ],
+  // 🌟 This forces Playwright to spin up your real app directories cleanly from scratch!
   webServer: [
     {
-      command: "npm run start:backend",
+      command: "cd ../library-backend && NODE_ENV=test npm run dev",
       port: 4000,
       timeout: 60000,
-      reuseExistingServer: !process.env.CI,
+      reuseExistingServer: false,
     },
     {
-      command: "npm run start:frontend",
+      command: "cd ../library-frontend && npm run dev",
       port: 5173,
       timeout: 60000,
-      reuseExistingServer: !process.env.CI,
+      reuseExistingServer: false,
     },
   ],
 });
